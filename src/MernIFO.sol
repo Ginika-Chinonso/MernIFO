@@ -43,15 +43,23 @@ contract MernIFO {
         _ifo.amtofTokenforSale = _amtofTokenforSale;
         _ifo.duration = _duration;
         _ifo.proposer = msg.sender;
+
+        IERC20(_tokenforsale).transferFrom(msg.sender, address(this), _amtofTokenforSale);
     }
 
     
-    //@dev ALlows Admin to start an IFO
+    //@dev Allows Admin to start an IFO
     function startIFO(uint _id) public {
         require(msg.sender == Admin, "Only Admin can start an IFO");
         IFO storage _ifo = IFODetail[_id];
         _ifo.starttime = block.timestamp;
         _ifo.endtime = _ifo.starttime + _ifo.duration;
+    }
+
+
+    function getContributorInfo(uint _id, address _contributor) public view returns (uint256 info) {
+        IFO storage _ifo = IFODetail[_id];
+        info = _ifo.amountContrib[_contributor];
     }
 
 
@@ -73,19 +81,26 @@ contract MernIFO {
 
 
     //@dev withdraw token gotten from contribution
-    function recieveToken(uint _id) public {
+    function recieveToken(uint _id) public returns (uint amttoRecieve) {
         IFO storage _ifo = IFODetail[_id];
 
         //@dev initial checks
         require(block.timestamp > _ifo.endtime, "IFO still ongoing");
 
-        uint amountContrib = _ifo.amountContrib[msg.sender];
-        uint totalAmtRaised = _ifo.amountRaised;
-        uint percentContrib = (amountContrib / totalAmtRaised ) * 100;
-
-        uint amttoRecieve = percentContrib * _ifo.amtofTokenforSale;
+        amttoRecieve = calculateTokenAllocation(_id, msg.sender);
         address tokenAddr = _ifo.tokenforsale;
         IERC20(tokenAddr).transfer(msg.sender, amttoRecieve);
+    }
+
+
+    //@dev calculates a persons token allocation
+    function calculateTokenAllocation(uint _id, address _address) public view returns (uint amttoRecieve) {
+        IFO storage _ifo = IFODetail[_id];
+
+        uint amountContrib = _ifo.amountContrib[_address];
+        uint totalAmtRaised = _ifo.amountRaised;
+
+        amttoRecieve = (amountContrib * _ifo.amtofTokenforSale) / totalAmtRaised;
     }
 
 
