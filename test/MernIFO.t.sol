@@ -33,6 +33,7 @@ contract MernIFOTest is Test {
 
     function testContribute() public {
         testStartIFO();
+        vm.warp(block.timestamp + 1 minutes);
         console.log(address(this).balance);
         vm.deal(address(0x01), 20 ether);
         vm.deal(address(0x02), 20 ether);
@@ -53,6 +54,12 @@ contract MernIFOTest is Test {
     //181 818 181 818 181 818 181//addr1//2E
     //90 909 090 909 090 909 090 //addr2//1E
     
+    function testFailCantContributeAfterIFOEnd() public {
+        testStartIFO();
+        vm.warp(block.timestamp + 6 minutes);
+        ifo.contribute{value: 5 ether}(1);
+    }
+
 
     function testRecieveToken() public {
         testContribute();

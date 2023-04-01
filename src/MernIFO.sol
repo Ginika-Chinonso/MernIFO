@@ -70,7 +70,7 @@ contract MernIFO {
 
         //@dev initial checks
         require(msg.value != 0, "Cant contribute zero ETH");
-        require(block.timestamp > _ifo.starttime || block.timestamp < _ifo.endtime, "IFO is not currently ongoing");
+        require(block.timestamp > _ifo.starttime && block.timestamp < _ifo.endtime, "IFO is not currently ongoing");
 
         _ifo.amountContrib[msg.sender] += msg.value;
         _ifo.amountRaised += msg.value;
